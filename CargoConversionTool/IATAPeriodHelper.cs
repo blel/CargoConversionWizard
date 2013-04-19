@@ -66,7 +66,8 @@ namespace CargoConversionTool
             //Calculate the Month
             upperBoundDate = new DateTime(baseDate.Year, baseDate.Month, 8);
             if (baseDate < upperBoundDate)
-                IATAMonth = string.Format("{0:MMM}", new DateTime(baseDate.Year, baseDate.Month - 1, baseDate.Day));
+                
+                IATAMonth = string.Format("{0:MMM}", new DateTime(baseDate.Year, baseDate.Month , baseDate.Day).AddMonths(-1));
             else
                 IATAMonth = string.Format("{0:MMM}", baseDate);
 

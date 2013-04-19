@@ -223,7 +223,7 @@ namespace CargoConversionTool
             System.Xml.XmlReaderSettings readerSettings = new System.Xml.XmlReaderSettings();
             readerSettings.ValidationType = ValidationType.Schema;
             readerSettings.Schemas.Add("http://www.IATA.com/IATAAviationInvoiceStandard",
-                "http://www.iata.org/whatwedo/finance/clearing/sis/Documents/schemas/IATA_IS_XML_Invoice_Standard_V3.2.xsd");
+                "http://www.iata.org/services/finance/sis/Documents/schemas/IATA_IS_XML_Invoice_Standard_V3.3.xsd");
             readerSettings.ValidationFlags |= XmlSchemaValidationFlags.ProcessInlineSchema;
             readerSettings.ValidationFlags |= XmlSchemaValidationFlags.ProcessSchemaLocation;
             readerSettings.ValidationFlags |= XmlSchemaValidationFlags.ReportValidationWarnings;
