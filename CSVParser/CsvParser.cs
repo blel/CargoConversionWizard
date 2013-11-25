@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using System.Reflection;
 using System.IO;
 using System.ComponentModel;
+using CSVParser;
 
 
 namespace CsvParser
@@ -38,7 +39,7 @@ namespace CsvParser
         public CsvParser()
         {
             if (typeof(T).GetCustomAttributes(typeof(IsCsvRecordAttribute), true) == null)
-                throw new Exception(string.Format("The type {0} lacks the attribute IsCsvRecordAttribute",typeof(T).Name));
+                throw new Exception(string.Format("The type {0} lacks the attribute IsCsvRecordAttribute", typeof(T).Name));
         }
 
         /// <summary>
@@ -50,11 +51,11 @@ namespace CsvParser
         /// <returns></returns>
         public List<T> ReadFromFile(string fullFileName, string separator, bool hasHeader)
         {
-            List<T>  RecordList = new List<T>();
+            List<T> RecordList = new List<T>();
             int currentLineCount = 0;
             //regex to identify csv fields 
-            Regex regex = new Regex("(\"(?:[^\"]+|\"\")*\"|[^"+separator+"]*)($|"+separator+")");
-            
+            Regex regex = new Regex("(\"(?:[^\"]+|\"\")*\"|[^" + separator + "]*)($|" + separator + ")");
+
             using (TextReader textReader = File.OpenText(fullFileName))
             {
                 //skip first line if hasHeader
@@ -62,7 +63,7 @@ namespace CsvParser
                 {
                     textReader.ReadLine();
                 }
-                
+
                 while (textReader.Peek() != -1)
                 {
                     MatchCollection currentLine = regex.Matches(textReader.ReadLine());
@@ -100,6 +101,64 @@ namespace CsvParser
         }
 
         /// <summary>
+        /// TODO: This is a copy paste version of ReadFromFile
+        /// using some extension methods for stream.
+        /// </summary>
+        /// <param name="content"></param>
+        /// <param name="separator"></param>
+        /// <param name="hasHeader"></param>
+        /// <returns></returns>
+        public List<T> ReadFromStream(Stream content, string separator, bool hasHeader)
+        {
+            var recordList = new List<T>();
+            var currentLineCount = 0;
+            //regex to identify csv fields 
+            var regex = new Regex("(\"(?:[^\"]+|\"\")*\"|[^" + separator + "]*)($|" + separator + ")");
+
+            //skip first line if hasHeader
+            if (hasHeader && content.Peek() != -1)
+            {
+                content.ReadLine();
+            }
+
+            while (content.Peek() != -1)
+            {
+                var currentLine = regex.Matches(content.ReadLine());
+
+                if (typeof(T).GetProperties().Count() != currentLine.Count - 1)
+                {
+                    throw new Exception("Column count mismatch in csv file.");
+                }
+                var columns = new List<string>();
+                for (var i = 0; i < currentLine.Count - 1; i++)
+                {
+                    var currentValue = currentLine[i].Value;
+                    currentValue = currentValue.Substring(currentValue.Length - 1) == separator ?
+                        currentValue.Substring(0, currentValue.Length - 1) : currentValue;
+
+                    columns.Add(currentValue);
+                }
+                try
+                {
+                    recordList.Add(ParseLine(columns));
+                    ImportedLineCount += 1;
+                }
+                catch (LineParseException ex)
+                {
+                    ValidationErrorOccurred(currentLineCount + 1, ex.Column, ex.Message);
+                }
+                finally
+                {
+                    currentLineCount += 1;
+                }
+            }
+
+            TotalLineCount = currentLineCount;
+            return recordList;
+
+        }
+
+        /// <summary>
         /// Parses a list of strings and assignes the same to the properties of the type T.
         /// </summary>
         /// <param name="currentLine"></param>
@@ -124,8 +183,8 @@ namespace CsvParser
                 if (currentProperty.GetCustomAttributes(typeof(MaxLengthAttribute), true).Count() != 0)
                 {
                     int maxLength = ((MaxLengthAttribute)currentProperty.GetCustomAttributes(typeof(MaxLengthAttribute), true).ElementAt(0)).MaxLength;
-                    if (currentLine.ElementAt(i).Length > maxLength )
-                        throw new LineParseException(string.Format("The max length of the field {0} is {1}.", currentProperty.Name, maxLength),i +1);
+                    if (currentLine.ElementAt(i).Length > maxLength)
+                        throw new LineParseException(string.Format("The max length of the field {0} is {1}.", currentProperty.Name, maxLength), i + 1);
                 }
 
                 //try to set the value
