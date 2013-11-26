@@ -12,10 +12,12 @@ using CSVParser;
 namespace CsvParser
 {
     /// <summary>
+    ///
     /// Class to parse csv files
     /// The structure of the csv file must be passed as type T
     /// </summary>
     /// <typeparam name="T">Type which corresponds to the structure of csv file</typeparam>
+    [Obsolete("Do not use this class anymore. Instead, use class which inherits from CsvParserBase", true)]
     public class CsvParser<T> where T : new()
     {
         public delegate void ValidationErrorOccuredHandler(int line, int col, string message);
@@ -98,64 +100,6 @@ namespace CsvParser
             }
             TotalLineCount = currentLineCount;
             return RecordList;
-        }
-
-        /// <summary>
-        /// TODO: This is a copy paste version of ReadFromFile
-        /// using some extension methods for stream.
-        /// </summary>
-        /// <param name="content"></param>
-        /// <param name="separator"></param>
-        /// <param name="hasHeader"></param>
-        /// <returns></returns>
-        public List<T> ReadFromStream(Stream content, string separator, bool hasHeader)
-        {
-            var recordList = new List<T>();
-            var currentLineCount = 0;
-            //regex to identify csv fields 
-            var regex = new Regex("(\"(?:[^\"]+|\"\")*\"|[^" + separator + "]*)($|" + separator + ")");
-
-            //skip first line if hasHeader
-            if (hasHeader && content.Peek() != -1)
-            {
-                content.ReadLine();
-            }
-
-            while (content.Peek() != -1)
-            {
-                var currentLine = regex.Matches(content.ReadLine());
-
-                if (typeof(T).GetProperties().Count() != currentLine.Count - 1)
-                {
-                    throw new Exception("Column count mismatch in csv file.");
-                }
-                var columns = new List<string>();
-                for (var i = 0; i < currentLine.Count - 1; i++)
-                {
-                    var currentValue = currentLine[i].Value;
-                    currentValue = currentValue.Substring(currentValue.Length - 1) == separator ?
-                        currentValue.Substring(0, currentValue.Length - 1) : currentValue;
-
-                    columns.Add(currentValue);
-                }
-                try
-                {
-                    recordList.Add(ParseLine(columns));
-                    ImportedLineCount += 1;
-                }
-                catch (LineParseException ex)
-                {
-                    ValidationErrorOccurred(currentLineCount + 1, ex.Column, ex.Message);
-                }
-                finally
-                {
-                    currentLineCount += 1;
-                }
-            }
-
-            TotalLineCount = currentLineCount;
-            return recordList;
-
         }
 
         /// <summary>

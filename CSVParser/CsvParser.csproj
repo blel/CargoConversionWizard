@@ -41,11 +41,13 @@
   <ItemGroup>
     <Compile Include="CsvParser.cs" />
     <Compile Include="CsvParserBase.cs" />
+    <Compile Include="FileCsvParser.cs" />
     <Compile Include="IsCsvRecordAttribute.cs" />
     <Compile Include="LineParseException.cs" />
     <Compile Include="MandatoryFieldAttribute.cs" />
     <Compile Include="MaxLengthAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="StreamCsvParser.cs" />
     <Compile Include="StreamExtensions.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
