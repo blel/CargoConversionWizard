@@ -40,6 +40,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CsvParser.cs" />
+    <Compile Include="CsvParserBase.cs" />
     <Compile Include="IsCsvRecordAttribute.cs" />
     <Compile Include="LineParseException.cs" />
     <Compile Include="MandatoryFieldAttribute.cs" />
